@@ -26,12 +26,13 @@
  *   Date       Name		Change 
  *   2019-02-02 Dan Ogorchock	Use asynchttpPost() instead of httpPost() call
  *   2019-09-09 Caleb Morse     Support deferring writes and doing buld writes to influxdb
+ *   2019-12-11 Jason Gavin     Modify hub properties to exclude double quotes
  *****************************************************************************************************************/
 definition(
     name: "InfluxDB Logger",
-    namespace: "nowhereville",
-    author: "Joshua Marker (tooluser)",
-    description: "Log SmartThings device states to InfluxDB",
+    namespace: "rhinoville",
+    author: "Jason Gavin",
+    description: "Log Hubitat device states to InfluxDB",
     category: "My Apps",
     iconUrl: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png",
     iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience@2x.png",
@@ -126,7 +127,7 @@ preferences {
 
 
 /*****************************************************************************************************************
- *  SmartThings System Commands:
+ *  Hubitat System Commands:
  *****************************************************************************************************************/
 
 /**
@@ -263,8 +264,8 @@ def handleModeEvent(evt) {
 
     def locationId = escapeStringForInfluxDB(location.id.toString())
     def locationName = escapeStringForInfluxDB(location.name)
-    def mode = '"' + escapeStringForInfluxDB(evt.value) + '"'
-	def data = "_stMode,locationId=${locationId},locationName=${locationName} mode=${mode}"
+    def mode = escapeStringForInfluxDB(evt.value)
+    def data = "_heMode,locationId=${locationId},locationName=${locationName} mode=${mode}"
     queueToInfluxDb(data)
 }
 
@@ -544,23 +545,23 @@ def softPoll() {
 /**
  *  logSystemProperties()
  *
- *  Generates measurements for SmartThings system (hubs and locations) properties.
+ *  Generates measurements for Hubitat system (hubs and locations) properties.
  **/
 def logSystemProperties() {
     logger("logSystemProperties()","trace")
 
-    def locationId = '"' + escapeStringForInfluxDB(location.id.toString()) + '"'
-    def locationName = '"' + escapeStringForInfluxDB(location.name) + '"'
+    def locationId = escapeStringForInfluxDB(location.id.toString())
+    def locationName = escapeStringForInfluxDB(location.name)
 
 	// Location Properties:
     if (prefLogLocationProperties) {
         try {
-            def tz = '"' + escapeStringForInfluxDB(location.timeZone.ID.toString()) + '"'
-            def mode = '"' + escapeStringForInfluxDB(location.mode) + '"'
+            def tz = escapeStringForInfluxDB(location.timeZone.ID.toString())
+            def mode = escapeStringForInfluxDB(location.mode)
             def hubCount = location.hubs.size()
             def times = getSunriseAndSunset()
-            def srt = '"' + times.sunrise.format("HH:mm", location.timeZone) + '"'
-            def sst = '"' + times.sunset.format("HH:mm", location.timeZone) + '"'
+            def srt = times.sunrise.format("HH:mm", location.timeZone)
+            def sst = times.sunset.format("HH:mm", location.timeZone)
 
             def data = "_heLocation,locationId=${locationId},locationName=${locationName},latitude=${location.latitude},longitude=${location.longitude},timeZone=${tz} mode=${mode},hubCount=${hubCount}i,sunriseTime=${srt},sunsetTime=${sst}"
             queueToInfluxDb(data)
@@ -574,9 +575,9 @@ def logSystemProperties() {
     if (prefLogHubProperties) {
        	location.hubs.each { h ->
         	try {
-                def hubId = '"' + escapeStringForInfluxDB(h.id.toString()) + '"'
-                def hubName = '"' + escapeStringForInfluxDB(h.name.toString()) + '"'
-                def hubIP = '"' + escapeStringForInfluxDB(h.localIP.toString()) + '"'
+                def hubId = escapeStringForInfluxDB(h.id.toString())
+                def hubName = escapeStringForInfluxDB(h.name.toString())
+                def hubIP = escapeStringForInfluxDB(h.localIP.toString())
                 //def hubStatus = '"' + escapeStringForInfluxDB(h.status) + '"'
                 //def batteryInUse = ("false" == h.hub.getDataValue("batteryInUse")) ? "0i" : "1i"
                 // See fix here for null time returned: https://github.com/codersaur/SmartThings/pull/33/files
@@ -584,7 +585,7 @@ def logSystemProperties() {
                 //def hubLastBootUnixTS = h.hub.uptime + 'i'
                 //def zigbeePowerLevel = h.hub.getDataValue("zigbeePowerLevel") + 'i'
                 //def zwavePowerLevel =  '"' + escapeStringForInfluxDB(h.hub.getDataValue("zwavePowerLevel")) + '"'
-                def firmwareVersion =  '"' + escapeStringForInfluxDB(h.firmwareVersionString) + '"'
+                def firmwareVersion =  escapeStringForInfluxDB(h.firmwareVersionString)
                 
                 def data = "_heHub,locationId=${locationId},locationName=${locationName},hubId=${hubId},hubName=${hubName},hubIP=${hubIP} "
                 data += "firmwareVersion=${firmwareVersion}"
