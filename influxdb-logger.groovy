@@ -265,7 +265,8 @@ def handleModeEvent(evt) {
     def locationId = escapeStringForInfluxDB(location.id.toString())
     def locationName = escapeStringForInfluxDB(location.name)
     def mode = escapeStringForInfluxDB(evt.value)
-    def data = "_heMode,locationId=${locationId},locationName=${locationName} mode=${mode}"
+    
+    def data = "_heMode,locationId=${locationId},locationName=${locationName},mode=${mode} "
     queueToInfluxDb(data)
 }
 
@@ -563,7 +564,7 @@ def logSystemProperties() {
             def srt = times.sunrise.format("HH:mm", location.timeZone)
             def sst = times.sunset.format("HH:mm", location.timeZone)
 
-            def data = "_heLocation,locationId=${locationId},locationName=${locationName},latitude=${location.latitude},longitude=${location.longitude},timeZone=${tz} mode=${mode},hubCount=${hubCount}i,sunriseTime=${srt},sunsetTime=${sst}"
+            def data = "_heLocation,locationId=${locationId},locationName=${locationName},latitude=${location.latitude},longitude=${location.longitude},timeZone=${tz},mode=${mode},hubCount=${hubCount}i,sunriseTime=${srt},sunsetTime=${sst}"
             queueToInfluxDb(data)
             //log.debug("LocationData = ${data}")
         } catch (e) {
